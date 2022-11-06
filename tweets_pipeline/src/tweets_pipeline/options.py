@@ -8,7 +8,7 @@ options = {
 database_options = {
     "host": "localhost",
     "user": "root",
-    "password": "----------------------",
+    "password": "------------------",
     "database": "twitterdb",
     "connection_timeout": 20 * 60,
 }    
