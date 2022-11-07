@@ -24,14 +24,13 @@ class TweetScraper:
 
     def _connect_to_database(self, database_options):
         """
-        This method is used to connect to the database, establish a cursor
+        This method is used to connect to the database
         Args :
             database_options : dictionary containing database options
         """
         self.database_options = database_options
         self.database = Database(self.database_options)
         self.database.connect()
-        self.cursor = self.database.connection.cursor()
 
     def scrape(self, scraper_options):
         """
@@ -71,8 +70,7 @@ class TweetScraper:
             True if the user is not in the database, False otherwise
         """
         query = f"SELECT * FROM Users WHERE username = '{username}'"
-        self.cursor.execute(query)
-        result = self.cursor.fetchall()
+        result = self.database.get_values(query)
         if len(result) == 0:
             return True
         else:
@@ -92,7 +90,88 @@ class TweetScraper:
                 unique_users.append(tweet.user.username)
         return unique_users
 
+    def scrape_user(self, username):
+        """
+        This method is used to scrape users from twitter and store them in the database
+        Args :
+            username : username of the user to scrape
+        Returns :
+            user_info : object containing user information
+        """
+        try:
+            user_info = sntwitter.TwitterUserScraper(username)._get_entity()
+            if user_info is None:
+                return None
+            else:
+                return user_info
+        except KeyError:
+            return None
 
+    def format_insert_statement(self,table_name, values):
+        """
+        This method is used to format an insert statement
+        Args :
+            table_name : name of the table to insert into
+            values : list of values to insert
+        Returns : 
+            insert_statement : string containing the insert statement
+        """
+        formated_values = "%r" % (tuple(values),)
+        if table_name == "Users":
+            statement = f"INSERT INTO {table_name}\
+                        (username, followers, friends, creation_date, verified, favs, aditionalinfo)\
+                        VALUES {formated_values}"
+        elif table_name == "Usersinfo":
+            statement = f"INSERT INTO {table_name}\
+                        (description, displayname, location, profile_image_url)\
+                        VALUES {formated_values}"
+        elif table_name == "Tweets":
+            statement = f"INSERT INTO {table_name}\
+                        (id, content, favs, retweets, quotes, date_ref, user_id, query_id)\
+                        VALUES {formated_values}"
+        elif table_name == "Querys":
+            statement = f"INSERT INTO {table_name}\
+                        (query, date_time, num_tweets)\
+                        VALUES {formated_values}"
+        elif table_name == "Tweetsdate":
+            statement = f"INSERT INTO {table_name}\
+                        (date_time, day,  month, year)\
+                        VALUES {formated_values}"
+        return statement + ";"
+
+    def insert_into_database(self, table_name, values):
+        """
+        This method is used to insert values into a table in the database
+        Args :
+            table_name : name of the table to insert into
+            values : list of values to insert
+        """
+        insert_statement = self.format_insert_statement(table_name, values)
+        self.database.execute_query(insert_statement)
+        
+    def find_last_id(self,table_name):
+        query = f"SELECT MAX(id) from {table_name}"
+        self.database.execute_query(query)
+        
+        
+    def fill_users_tables(self,unique_users):
+        userinfo_table_name = "Usersinfo"
+        users_table_name = "Users"
+        for user in unique_users:
+            user_info = self.scrape_user(user)
+            if user_info is not None:
+                usersinfo_values = [user_info.description, user_info.displayName, user_info.location, user_info.profileImageUrl]
+            else :
+                usersinfo_values = ["None", "None", "None", "None"]
+            self.insert_into_database(userinfo_table_name,usersinfo_values)
+            if user_info is not None:
+                users_values = [user, user_info.followersCount, user_info.friendsCount, user_info.created.strftime("%Y-%m-%d") , user_info.verified, user_info.favouritesCount, user_info.url]
+            else :
+                users_values = []
+            self.insert_into_database(users_table_name,users_values)
+
+
+            
 
 
 if __name__ == "__main__":
@@ -104,3 +183,6 @@ if __name__ == "__main__":
     tweets = scraper.scrape_tweets(10)
     unique_users = scraper.check_unique_users(tweets)
     print(unique_users)
+    values = [1,2,3,4,5,6]
+    test_string = scraper.format_insert_statement("Users", values)
+    print(test_string)
