@@ -33,15 +33,8 @@ class TweetScraper:
         self.database = Database(self.database_options)
         self.database.connect()
 
-    def scrape(self, scraper_options):
-        """
-        This method is used to scrape tweets and users from twitter and store them in the database
-        Args :
-            scraper_options : dictionary containing scrape options
-        """
-        self.scraper_options = scraper_options
-
-    def scrape_tweets(self, num_tweets):
+    
+    def scrape_tweets(self, num_tweets = None):
         """
         This method is used to scrape tweets from twitter and store them in the database
         Args :
@@ -50,6 +43,8 @@ class TweetScraper:
             tweets : list of tweets scraped
         """
         tweets = []
+        if num_tweets is None:
+            num_tweets = self.scraper_options["number_of_tweets"]
         to_search = self.scraper_options["query"]
         for i, tweet in enumerate(
             sntwitter.TwitterSearchScraper(to_search).get_items()
@@ -87,9 +82,8 @@ class TweetScraper:
         """
         unique_users = []
         for tweet in tweets:
-            if (tweet.user not in unique_users) and (
-                self._check_user_in_database(tweet.user.username)
-            ):
+            user_in_database = self._check_user_in_database(tweet.user.username)
+            if (tweet.user not in unique_users) and (user_in_database):
                 unique_users.append(tweet.user.username)
         return unique_users
 
@@ -130,7 +124,7 @@ class TweetScraper:
                         VALUES {formated_values}"
         elif table_name == "Tweets":
             statement = f"INSERT INTO {table_name}\
-                        (id, content, favs, retweets, quotes, date_ref, user_id, query_id)\
+                        (content, favs, retweets, quotes, date_ref, user_id, query_id)\
                         VALUES {formated_values}"
         elif table_name == "Querys":
             statement = f"INSERT INTO {table_name}\
@@ -161,7 +155,7 @@ class TweetScraper:
             last_id : last id of the table
         """
         query = f"SELECT MAX(id) from {table_name}"
-        result = self.database.execute_query(query)
+        result = self.database.get_values(query)
         return result[0][0]
 
     def fill_users_tables(self, unique_users):
@@ -179,7 +173,7 @@ class TweetScraper:
             if user_info is not None:
                 usersinfo_values = [
                     user_info.description,
-                    user_info.displayName,
+                    user_info.displayname,
                     user_info.location,
                     user_info.profileImageUrl,
                 ]
@@ -194,7 +188,6 @@ class TweetScraper:
                     user_info.created.strftime("%Y-%m-%d"),
                     user_info.verified,
                     user_info.favouritesCount,
-                    user_info.url,
                     self.find_last_id(userinfo_table_name),
                 ]
             else:
@@ -235,7 +228,7 @@ class TweetScraper:
             user_id : id of the user
         """
         query = f"SELECT id FROM Users WHERE username = '{username}'"
-        result = self.database.execute_query(query)
+        result = self.database.get_values(query)
         return result[0][0]
     
     def fill_tweets_table(self, tweets):
@@ -256,9 +249,9 @@ class TweetScraper:
             self.insert_into_database(tweetsdate_table_name, tweetsdate_values)
             tweets_values = [
                 tweet.content,
-                tweet.favorites,
-                tweet.retweets,
-                tweet.quotes,
+                tweet.likeCount,
+                tweet.retweetCount,
+                tweet.quoteCount,
                 self.find_last_id(tweetsdate_table_name),
                 self.find_user_id(tweet.username),
                 self.find_last_id("Querys"),
@@ -279,7 +272,8 @@ class TweetScraper:
         step 7 : count the number of tweets scraped
         """
         self._connect_to_database(database_options)
-        tweets = self._scrape_tweets(scraper_options)
+        self.scraper_options = scraper_options
+        tweets = self.scrape_tweets()
         unique_users = self.check_unique_users(tweets)
         self.fill_users_tables(unique_users)
         self.fill_query_table(scraper_options["query"])
@@ -289,15 +283,5 @@ class TweetScraper:
 
 if __name__ == "__main__":
     from options import database_options, scraper_options
-
     scraper = TweetScraper()
-    print(dir(scraper))
-    scraper._connect_to_database(database_options)
-    #Delete this method, just for testing
-    scraper.scrape(scraper_options)
-    tweets = scraper.scrape_tweets(10)
-    unique_users = scraper.check_unique_users(tweets)
-    print(unique_users)
-    values = [1, 2, 3, 4, 5, 6]
-    test_string = scraper.format_insert_statement("Users", values)
-    print(test_string)
+    scraper.start_scraping(scraper_options, database_options)

@@ -50,7 +50,7 @@ class Database:
             self.cursor.close()
         except Exception as e:
             raise e
-
+    
     def execute_query(self, query):
         """
         This method is used to execute a query on the database
