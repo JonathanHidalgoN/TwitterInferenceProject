@@ -258,7 +258,33 @@ class TweetScraper:
             ]
             self.insert_into_database(tweets_table_name, tweets_values)
     
-    
+    def count_number_of_tweets(self,query_id):
+        """
+        This method is used to count the number of tweets in a query
+        Args :
+            query_id : id of the query
+        Returns :
+            num_tweets : number of tweets in the query
+        """
+        query = f"SELECT COUNT(*) FROM Tweets WHERE query_id = {query_id}"
+        result = self.database.get_values(query)
+        if result is None:
+            return 0
+        else:
+            return result[0][0]
+
+
+    def update_query_table(self, query_id, num_tweets):
+        """
+        This method is used to update the query table in the database
+        Args :
+            query_id : id of the query
+            num_tweets : number of tweets in the query
+        """
+        query = f"UPDATE Querys SET num_tweets = {num_tweets} WHERE id = {query_id}"
+        self.database.execute_query(query)
+
+
     
     def start_scraping(self, scraper_options = None, database_options = None):
         """
@@ -278,6 +304,8 @@ class TweetScraper:
         self.fill_users_tables(unique_users)
         self.fill_query_table(scraper_options["query"])
         self.fill_tweets_table(tweets)
+        last_query_id = self.find_last_id("Querys")
+        self.update_query_table(last_query_id, self.count_number_of_tweets(last_query_id))
 
 
 
