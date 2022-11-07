@@ -153,11 +153,25 @@ class TweetScraper:
         self.database.execute_query(insert_statement)
 
     def find_last_id(self, table_name):
+        """
+        This method is used to find the last id of a table in the database
+        Args :
+            table_name : name of the table to find the last id
+        Returns :
+            last_id : last id of the table
+        """
         query = f"SELECT MAX(id) from {table_name}"
         result = self.database.execute_query(query)
         return result[0][0]
 
     def fill_users_tables(self, unique_users):
+        """
+        This method is used to fill the users tables in the database.
+        When an user is not found, but a tweet from this user is found, the user is added to the database with username and 
+        default values, this can happen if an user change username.
+        Args :
+            unique_users : list of unique users
+        """
         userinfo_table_name = "Usersinfo"
         users_table_name = "Users"
         for user in unique_users:
@@ -184,8 +198,27 @@ class TweetScraper:
                     self.find_last_id(userinfo_table_name),
                 ]
             else:
-                users_values = []
+                users_values = [user, 0, 0, "None", 0, 0, "None", self.find_last_id(userinfo_table_name)]
             self.insert_into_database(users_table_name, users_values)
+
+
+    def start_scraping(self, scraper_options = None, database_options = None):
+        """
+        This method is used to start the scraper
+        step 1 : connect to the database
+        step 2 : scrape tweets
+        step 3 : create a list of unique users
+        step 4 : fill the users tables
+        step 5 : fill the query table
+        step 6 : fill the tweets table
+        step 7 : count the number of tweets scraped
+        """
+        self._connect_to_database(database_options)
+        tweets = self._scrape_tweets(scraper_options)
+        unique_users = self.check_unique_users(tweets)
+        self.fill_users_tables(unique_users)
+        
+
 
 
 if __name__ == "__main__":
