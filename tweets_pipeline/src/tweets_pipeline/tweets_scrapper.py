@@ -225,6 +225,47 @@ class TweetScraper:
         query_table_name = "Querys"
         query_values = [query, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 0]
         self.insert_into_database(query_table_name, query_values)
+
+    def find_user_id(self,username):
+        """
+        This method is used to find the id of a user in the database
+        Args :
+            username : username of the user
+        Returns :
+            user_id : id of the user
+        """
+        query = f"SELECT id FROM Users WHERE username = '{username}'"
+        result = self.database.execute_query(query)
+        return result[0][0]
+    
+    def fill_tweets_table(self, tweets):
+        """
+        This method is used to fill the tweets table in the database
+        Args :
+            tweets : list of tweets to insert
+        """
+        tweets_table_name = "Tweets"
+        tweetsdate_table_name = "Tweetsdate"
+        for tweet in tweets:
+            tweetsdate_values = [
+                tweet.date.strftime("%Y-%m-%d %H:%M:%S"),
+                tweet.date.day,
+                tweet.date.month,
+                tweet.date.year,
+            ]
+            self.insert_into_database(tweetsdate_table_name, tweetsdate_values)
+            tweets_values = [
+                tweet.content,
+                tweet.favorites,
+                tweet.retweets,
+                tweet.quotes,
+                self.find_last_id(tweetsdate_table_name),
+                self.find_user_id(tweet.username),
+                self.find_last_id("Querys"),
+            ]
+            self.insert_into_database(tweets_table_name, tweets_values)
+    
+    
     
     def start_scraping(self, scraper_options = None, database_options = None):
         """
@@ -242,7 +283,7 @@ class TweetScraper:
         unique_users = self.check_unique_users(tweets)
         self.fill_users_tables(unique_users)
         self.fill_query_table(scraper_options["query"])
-
+        self.fill_tweets_table(tweets)
 
 
 
