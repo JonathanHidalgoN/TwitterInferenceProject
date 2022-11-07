@@ -14,6 +14,7 @@ class TweetScraper:
         now : current date and time when the object is created
         scraper_options : dictionary containing scrape options
         cursor : cursor to the database
+        _tweets_generator : generator of tweets
     """
 
     def __init__(self):
@@ -22,6 +23,7 @@ class TweetScraper:
         self.now = datetime.now()
         self.scraper_options = None
         self.cursor = None
+        self._tweets_generator = None
 
     def _connect_to_database(self, database_options):
         """
@@ -33,7 +35,14 @@ class TweetScraper:
         self.database = Database(self.database_options)
         self.database.connect()
 
-    
+    def _assing_tweets_generator(self):
+        """
+        This method is used to assign a generator of tweets to the object, this way
+        the query is only executed once
+        """
+        to_search = self.scraper_options["query"]
+        self._tweets_generator = sntwitter.TwitterSearchScraper(to_search).get_items()
+        
     def scrape_tweets(self, num_tweets = None):
         """
         This method is used to scrape tweets from twitter and store them in the database
@@ -45,10 +54,7 @@ class TweetScraper:
         tweets = []
         if num_tweets is None:
             num_tweets = self.scraper_options["number_of_tweets"]
-        to_search = self.scraper_options["query"]
-        for i, tweet in enumerate(
-            sntwitter.TwitterSearchScraper(to_search).get_items()
-        ):
+        for i, tweet in enumerate(self._tweets_generator):
             try:
                 if i >= num_tweets:
                     break
@@ -285,8 +291,11 @@ class TweetScraper:
         self.database.execute_query(query)
 
 
+
+    def _manage_scraping(self,batch_size = 1000, verbose = False):
+        pass
     
-    def start_scraping(self, scraper_options = None, database_options = None):
+    def start_scraping(self, scraper_options = None, database_options = None, **kwargs):
         """
         This method is used to start the scraper
         step 1 : connect to the database
@@ -299,6 +308,7 @@ class TweetScraper:
         """
         self._connect_to_database(database_options)
         self.scraper_options = scraper_options
+        self._assing_tweets_generator()
         tweets = self.scrape_tweets()
         unique_users = self.check_unique_users(tweets)
         self.fill_users_tables(unique_users)
