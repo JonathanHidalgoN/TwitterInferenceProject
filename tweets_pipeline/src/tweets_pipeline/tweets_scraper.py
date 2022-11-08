@@ -320,6 +320,11 @@ class TweetScraper:
 
 
 if __name__ == "__main__":
-    from options import database_options, scraper_options
-    scraper = TweetScraper()
-    scraper.start_scraping(scraper_options, database_options)
+    users = ["@elonmusk", "@BarackObama", "@Oprah", "@richardbranson",
+    "@justinbieber", "@thejustinwelsh", "@fchollet", "@IAmClintMurphy",
+    "@yanisvaroufakis", "@Asmongold"]  
+    from tweets_pipeline.options import database_options, scraper_options
+    for user in users:
+        scraper_options["query"] = f"(FROM:{user}) lang:en"
+        scraper = TweetScraper()
+        scraper.start_scraping(scraper_options, database_options)
