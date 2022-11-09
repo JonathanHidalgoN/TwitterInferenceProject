@@ -28,6 +28,7 @@ class Database:
         """
         try:
             self.connection = mysql.connector.connect(**self.database_options)
+            self.connection.start_transaction(isolation_level='READ UNCOMMITTED')
             self.connection_status = True
             return self.connection
         except Exception as e:
@@ -74,3 +75,17 @@ class Database:
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             return cursor.fetchall()
+
+        
+def temportal_connection_to_check_values(options,query):
+    """
+    This method is used to connect to the database and establish a cursor
+    """
+    connection_to_check_values = mysql.connector.connect(**options)
+    connection_to_check_values.start_transaction(isolation_level='READ COMMITTED')
+    temporal_cursor = connection_to_check_values.cursor()
+    temporal_cursor.execute(query)
+    values = temporal_cursor.fetchall()
+    temporal_cursor.close()
+    connection_to_check_values.close()
+    return values
