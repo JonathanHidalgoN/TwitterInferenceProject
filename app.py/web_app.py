@@ -24,3 +24,5 @@ if option == "Existing users":
         user_image = app_functions.get_image_of_user(db,selected_user)
         st.image(user_image, width=180)
 
+    dashboard = app_functions.create_dates_dashboard(db,selected_user)
+    st.pyplot(dashboard)

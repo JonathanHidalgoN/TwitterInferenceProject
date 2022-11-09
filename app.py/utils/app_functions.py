@@ -2,6 +2,9 @@ import pandas as pd
 import requests
 from PIL import Image
 from io import BytesIO
+import seaborn as sns
+import datetime as dt
+import matplotlib.pyplot as plt
 
 def users_with_most_tweets(db, n=10):
     """Get the users with the most tweets in the database.
@@ -77,4 +80,70 @@ def get_image_of_user(db,username):
     response = requests.get(user_image_url, stream=True)
     img = Image.open(BytesIO(response.content))
     return img
+
+def get_tweets_dates(db,username, n = 1_000):
+    """Get the dates of the tweets of a user.
+    Args:
+        db (Database): The database object.
+        username (str): The username of the user.
+        n (int): The number of tweets to get the dates of.
+    Returns:
+        list: The dates of the tweets of the user.
+    """
+    query = "\
+    select d.date_time from Tweetsdate as d\
+    left join Tweets as t\
+    on d.id = t.date_ref\
+    left join Users as u\
+    on u.id = t.user_id\
+    where u.username = '{}'\
+    order by d.date_time desc\
+    limit {};\
+    ".format(username, n)
+    values = db.get_values(query)
+    return values
+
+def create_dates_dashboard(db,username,n = 1_000, group_by = "day"):
+    dates = get_tweets_dates(db,username,n)
+    #Take dates and transform them to datetime
+    dates = [date[0] for date in dates]
+    #Create a dataframe with the dates
+    df = pd.DataFrame(dates, columns=['date'])
+    #Create a dashboard with the dates
+    df['year'] = df['date'].dt.year
+    df['month'] = df['date'].dt.month
+    df['weekday'] = df['date'].dt.weekday
+    df['day'] = df['date'].dt.day
+    if group_by == "day":
+        df = df.groupby(['year','month','day']).size().reset_index(name='counts')
+    elif group_by == "month":
+        df = df.groupby(['year','month']).size().reset_index(name='counts')
+    
+    #Create dashboard like github and return it
+    fig, ax = plt.subplots(figsize=(10, 5))
+    palette = sns.color_palette("rocket_r")
+    sns.lineplot(x=df[group_by], y=df['counts'], data=df, ax=ax,
+                 palette=palette, linewidth=2.5)
+    ax.set_title(f"Number of tweets per {group_by} of {username}")
+    ax.set_xlabel(f"{group_by}")
+    ax.set_ylabel("Number of tweets")
+    return fig
+
+
+if __name__ == "__main__":
+    from app_options import database_options
+    from tweets_pipeline.database import Database
+    db = Database(database_options)
+    db.connect()
+    username = "elonmusk"
+    dates = get_tweets_dates(db, username)
+    print(dates)
+
+
+
+
+
+
+
+
 
