@@ -1,10 +1,5 @@
 import re
 
-
-
-
-
-
 def clean_text(original_text):
     """Clean the text of a tweet.
     Args:
