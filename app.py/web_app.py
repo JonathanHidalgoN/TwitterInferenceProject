@@ -15,6 +15,7 @@ if option == "Existing users":
     users_to_show = st.slider("Select the number of users to show", 1, 100, 10)
     users_df = app_functions.users_with_most_tweets(db, users_to_show)
     st.dataframe(users_df)
-    #select a user from the dataframe
     selected_user = st.selectbox("Select a user", users_df["username"])
-    
+    general_info = app_functions.examine_user(db, selected_user)
+    st.dataframe(general_info)
+
