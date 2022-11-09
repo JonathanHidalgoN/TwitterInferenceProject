@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 
 def clean_text(original_text):
     """Clean the text of a tweet.
@@ -25,6 +26,7 @@ def clean_text(original_text):
     text = re.sub(r"'bout", "about", text)
     text = re.sub(r"'til", "until", text)
     text = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,]", "", text)
+    text = re.sub(r"http\S+", "", text)
     return text
 
 def get_tweets_text(db,username, n = 1_000):
@@ -46,5 +48,33 @@ def get_tweets_text(db,username, n = 1_000):
     ".format(username, n)
     tweets = db.get_values(query)
     tweets = [tweet[0] for tweet in tweets]
-    tweets = [clean_text(tweet) for tweet in tweets]
+    return " ".join(tweets)
     return tweets
+
+def delete_words(text, black_list):
+    """
+    Delete useless words.
+    Args:
+        text (str): text to clean
+    Returns:
+        text (str): cleaned text
+    """
+    re_banned_words = re.compile(r"\b(" + "|".join(black_list) + ")\\W", re.I)
+    return re_banned_words.sub("", text)
+
+def count_occurrences(db,username, n = 1_000, black_list = [], top_n = 10):
+    """
+    Count the number of occurrences of each word in a column.
+    Args:
+        db (Database): The database object.
+        username (str): The username of the user.
+        n (int): The number of tweets to get the text of.
+        black_list (list): The list of words to delete.
+        Returns:
+        Counter: The number of occurrences of each word.
+    """
+    text = get_tweets_text(db,username, n)
+    cleaned_text = clean_text(text)
+    cleaned_text = delete_words(cleaned_text, black_list)
+    words_times = Counter(cleaned_text.split())
+    return words_times.most_common(top_n)

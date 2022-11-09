@@ -5,6 +5,7 @@ from io import BytesIO
 import seaborn as sns
 import datetime as dt
 import matplotlib.pyplot as plt
+from utils.text_processing_functions import count_occurrences
 
 def users_with_most_tweets(db, n=10):
     """Get the users with the most tweets in the database.
@@ -105,11 +106,8 @@ def get_tweets_dates(db,username, n = 1_000):
 
 def create_dates_dashboard(db,username,n = 1_000, group_by = "day"):
     dates = get_tweets_dates(db,username,n)
-    #Take dates and transform them to datetime
     dates = [date[0] for date in dates]
-    #Create a dataframe with the dates
     df = pd.DataFrame(dates, columns=['date'])
-    #Create a dashboard with the dates
     df['year'] = df['date'].dt.year
     df['month'] = df['date'].dt.month
     df['weekday'] = df['date'].dt.weekday
@@ -119,7 +117,6 @@ def create_dates_dashboard(db,username,n = 1_000, group_by = "day"):
     elif group_by == "month":
         df = df.groupby(['year','month']).size().reset_index(name='counts')
     
-    #Create dashboard like github and return it
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.set_theme(style="ticks")
     sns.set_style("darkgrid")
@@ -131,6 +128,20 @@ def create_dates_dashboard(db,username,n = 1_000, group_by = "day"):
     return fig
 
 
+def create_common_words_graph(db,username,n = 1000,black_list = [],top_n = 10):
+    common_words = count_occurrences(db,username,n,black_list,top_n)
+    words = [word[0] for word in common_words]
+    counts = [word[1] for word in common_words]
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.set_theme(style="ticks")
+    sns.set_style("darkgrid")
+    sns.barplot(y=words, x=counts, ax=ax,
+                palette="pastel", linewidth=2.5, color = "red")
+    ax.set_title(f"Most common words of {username}")
+    ax.set_ylabel("Words")
+    ax.set_xlabel("Number of occurrences")
+    return fig
+    
 if __name__ == "__main__":
     from app_options import database_options
     from tweets_pipeline.database import Database
