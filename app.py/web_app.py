@@ -16,6 +16,11 @@ if option == "Existing users":
     users_df = app_functions.users_with_most_tweets(db, users_to_show)
     st.dataframe(users_df)
     selected_user = st.selectbox("Select a user", users_df["username"])
-    general_info = app_functions.examine_user(db, selected_user)
-    st.dataframe(general_info)
+    col1, col2 = st.columns(2)
+    with col2:
+        general_info = app_functions.examine_user(db, selected_user)
+        st.dataframe(general_info, width=500)
+    with col1:
+        user_image = app_functions.get_image_of_user(db,selected_user)
+        st.image(user_image, width=180)
 
