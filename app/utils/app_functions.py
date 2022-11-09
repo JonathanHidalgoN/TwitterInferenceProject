@@ -105,6 +105,15 @@ def get_tweets_dates(db,username, n = 1_000):
     return values
 
 def create_dates_dashboard(db,username,n = 1_000, group_by = "day"):
+    """Create a dashboard of the dates of the tweets of a user.
+    Args:
+        db (Database): The database object.
+        username (str): The username of the user.
+        n (int): The number of tweets to get the dates of.
+        group_by (str): The way to group the dates.
+    Returns:
+        Figure: The dashboard of the dates of the tweets of the user.
+    """
     dates = get_tweets_dates(db,username,n)
     dates = [date[0] for date in dates]
     df = pd.DataFrame(dates, columns=['date'])
@@ -129,6 +138,16 @@ def create_dates_dashboard(db,username,n = 1_000, group_by = "day"):
 
 
 def create_common_words_graph(db,username,n = 1000,black_list = [],top_n = 10):
+    """Create a bar plot of the most common words in the tweets of a user.
+    Args:
+        db (Database): The database object.
+        username (str): The username of the user.
+        n (int): The number of tweets to get the words of.
+        black_list (list): The words to ignore.
+        top_n (int): The number of words to show.
+    Returns:
+        Figure: The dashboard of the most common words in the tweets of the user.
+    """
     common_words = count_occurrences(db,username,n,black_list,top_n)
     words = [word[0] for word in common_words]
     counts = [word[1] for word in common_words]
