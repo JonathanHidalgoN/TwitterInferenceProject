@@ -127,7 +127,6 @@ def create_dates_dashboard(db,username,n = 1_000, group_by = "day"):
         df = df.groupby(['year','month','day']).size().reset_index(name='counts')
     elif group_by == "month":
         df = df.groupby(['year','month']).size().reset_index(name='counts')
-    
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.set_theme(style="ticks")
     sns.set_style("darkgrid")
