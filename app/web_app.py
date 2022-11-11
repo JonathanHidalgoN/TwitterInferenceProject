@@ -34,13 +34,15 @@ if option == "Existing users":
         words_to_show = st.slider("Select the number of words to show", 10, 60, 10)
     common_words_chart = app_functions.create_common_words_graph(db, selected_user, tweets_to_count_words, stop_words, words_to_show)
     st.pyplot(common_words_chart, width=500, height=500)
+    st.markdown("<h1 style='text-align: center;'>Some distributions</h1>", unsafe_allow_html=True)
+    tweets_for_distributions = st.select_slider("Select the number of tweets to analyse", options=[1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000])
     col1, col2 = st.columns(2)
     with col1:
         text_option_1 = st.selectbox("Select the distribution to show", ("favs", "Retweets","quotes","number of words per tweet"), index=0)
         app_functions._add_space(8)
         text_option_2 = st.selectbox("Select the distribution to show", ("favs", "Retweets","quotes","number of words per tweet"), index=1)
     with col2:
-        dist1 = app_functions.display_distribution_1 = app_functions.display_distribution(db, text_option_1, tweets_to_count_words)
+        dist1 = app_functions.display_distribution_1 = app_functions.display_distribution(db, text_option_1, tweets_for_distributions)
         st.pyplot(dist1, width=500, height=500)
-        dist2 = app_functions.display_distribution_2 = app_functions.display_distribution(db, text_option_2, tweets_to_count_words)
+        dist2 = app_functions.display_distribution_2 = app_functions.display_distribution(db, text_option_2, tweets_for_distributions)
         st.pyplot(dist2, width=500, height=500)

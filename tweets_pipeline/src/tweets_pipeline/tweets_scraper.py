@@ -200,7 +200,7 @@ class TweetScraper:
                         self.find_last_id(userinfo_table_name),
                     ]
                 else:
-                    users_values = [user, 0, 0, "None", 0, 0, self.find_last_id(userinfo_table_name)]
+                    users_values = [user, 0, 0, "9999-12-31", 0, 0, self.find_last_id(userinfo_table_name)]
                 self.insert_into_database(users_table_name, users_values)
 
     def count_tweets(self, query_id):
