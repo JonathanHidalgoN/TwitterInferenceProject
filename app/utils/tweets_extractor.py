@@ -20,7 +20,7 @@ def tweets_to_text(db, query, clean_tweets = False, path = "tweets.txt", delimit
 
 if __name__ == "__main__":
     from tweets_pipeline.database import Database
-    from options import database_options
+    from options import database_options    
     db = Database(database_options)
     query = "select content from Tweets order by id desc;"
     tweets = tweets_to_text(db, query, clean_tweets = True, path = "tweets.txt", delimiter = "|-|")
