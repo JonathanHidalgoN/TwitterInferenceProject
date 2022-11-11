@@ -5,7 +5,9 @@ from io import BytesIO
 import seaborn as sns
 import datetime as dt
 import matplotlib.pyplot as plt
-from utils.text_processing_functions import count_occurrences
+from utils import text_processing_functions as text_functions 
+from streamlit import write as stwrite
+import numpy as np
 
 def users_with_most_tweets(db, n=10):
     """Get the users with the most tweets in the database.
@@ -148,7 +150,7 @@ def create_common_words_graph(db,username,n = 1000,black_list = [],top_n = 10):
     Returns:
         Figure: The dashboard of the most common words in the tweets of the user.
     """
-    common_words = count_occurrences(db,username,n,black_list,top_n)
+    common_words = text_functions.count_occurrences(db,username,n,black_list,top_n)
     words = [word[0] for word in common_words]
     counts = [word[1] for word in common_words]
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -161,6 +163,54 @@ def create_common_words_graph(db,username,n = 1000,black_list = [],top_n = 10):
     ax.set_xlabel("Number of occurrences")
     return fig
     
+            
+def get_a_column(db,table,col,aditional = ""):
+    """Get a column from a table.
+    Args:
+        db (Database): The database object.
+        table (str): The table to get the column from.
+        col (str): The column to get.
+        aditional (str): Aditional information to add to the query.
+    Returns:
+        list: The values of the column.
+    """
+    query = f"select {col} from {table} {aditional}"
+    values = db.get_values(query)
+    return values
+
+def display_distribution(db,col, n = 1000):
+    """Display the distribution of a column.
+    Args:
+        db (Database): The database object.
+        col (str): The column to display the distribution of.
+        n (int): The number of tweets to get the words of.
+    Returns:
+        Figure: The dashboard of the distribution of the column.
+    """
+    favs = get_a_column(db,"Tweets",f"{col}",f"limit {n}")
+    favs = [fav[0] for fav in favs]
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.set_style("darkgrid")
+    sns.histplot(favs, ax=ax, color = "red", palette="pastel")
+    ax.set_title(f"Distribution of {col}")
+    ax.set_ylabel("Number of tweets")
+    ax.set_xlabel("Number of {col}")
+    return fig
+    
+def _add_space(n = 5):
+    """Add a space.
+    Args:
+        n (int): The number of spaces to add.
+    """
+    for _ in range(n):
+        stwrite("")
+
+
+
+
+
+
+
 if __name__ == "__main__":
     from app_options import database_options
     from tweets_pipeline.database import Database
