@@ -92,7 +92,7 @@ def get_occurences(db,username,character ,n = 1000):
     tweet = get_tweets_text(db,username, n)
     compilation = []
     match = re.findall(r'\b{character}\w+'.format(character = character), tweet)
-    #match = re.findall(r'\b[s]\w+', tweet)
     if match != []:
         compilation.append(match)
     return compilation
+
