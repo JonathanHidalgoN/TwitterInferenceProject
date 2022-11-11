@@ -187,15 +187,28 @@ def display_distribution(db,col, n = 1000):
     Returns:
         Figure: The dashboard of the distribution of the column.
     """
-    favs = get_a_column(db,"Tweets",f"{col}",f"limit {n}")
-    favs = [fav[0] for fav in favs]
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.set_style("darkgrid")
-    sns.histplot(favs, ax=ax, color = "red", palette="pastel")
-    ax.set_title(f"Distribution of {col}")
-    ax.set_ylabel("Number of tweets")
-    ax.set_xlabel("Number of {col}")
+    if col !="number of words per tweet":
+        favs = get_a_column(db,"Tweets",f"{col}",f"limit {n}")
+        favs = [fav[0] for fav in favs]
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.set_style("darkgrid")
+        ax.set_xlim(0, np.percentile(favs, 95))
+        sns.histplot(favs, ax=ax, color = "red", palette="pastel", kde=True)
+        ax.set_title(f"Distribution of {col}")
+        ax.set_ylabel("Number of tweets")
+        ax.set_xlabel(f"Number of {col}")
+    else : 
+        words = get_a_column(db,"Tweets","content",f"limit {n}")
+        words = [len(word[0].split()) for word in words]
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.set_style("darkgrid")
+        ax.set_xlim(0, np.percentile(words, 95))
+        sns.histplot(words, ax=ax, color = "skyblue", palette="pastel", kde=True)
+        ax.set_title(f"Distribution of {col}")
+        ax.set_ylabel("Number of tweets")
+        ax.set_xlabel(f"Number of {col}")
     return fig
+
     
 def _add_space(n = 5):
     """Add a space.
