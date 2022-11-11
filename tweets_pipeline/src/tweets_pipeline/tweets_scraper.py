@@ -1,4 +1,4 @@
-from tweets_pipeline.database import Database, temportal_connection_to_check_values
+from tweets_pipeline.database import Database
 import snscrape.modules.twitter as sntwitter
 from datetime import datetime
 
@@ -200,7 +200,7 @@ class TweetScraper:
                         self.find_last_id(userinfo_table_name),
                     ]
                 else:
-                    users_values = [user, 0, 0, "None", 0, 0, "None", self.find_last_id(userinfo_table_name)]
+                    users_values = [user, 0, 0, "None", 0, 0, self.find_last_id(userinfo_table_name)]
                 self.insert_into_database(users_table_name, users_values)
 
     def count_tweets(self, query_id):
@@ -323,14 +323,8 @@ class TweetScraper:
 
 
 if __name__ == "__main__":
-
-    users = ["@elonmusk", "@BarackObama", "@Oprah", "@richardbranson",
-    "@justinbieber", "@thejustinwelsh", "@fchollet", "@IAmClintMurphy",
-    "@yanisvaroufakis", "@Asmongold"]  
     from tweets_pipeline.options import database_options, scraper_options
-    for user in users:
-        scraper_options["query"] = f"(FROM:{user}) lang:en"
-        scraper = TweetScraper()
-        scraper.start_scraping(scraper_options, database_options)
+    scraper = TweetScraper()
+    scraper.start_scraping(scraper_options, database_options)
     
     
