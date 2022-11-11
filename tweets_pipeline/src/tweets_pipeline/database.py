@@ -77,15 +77,3 @@ class Database:
             return cursor.fetchall()
 
         
-def temportal_connection_to_check_values(options,query):
-    """
-    This method is used to connect to the database and establish a cursor
-    """
-    connection_to_check_values = mysql.connector.connect(**options)
-    connection_to_check_values.start_transaction(isolation_level='READ COMMITTED')
-    temporal_cursor = connection_to_check_values.cursor()
-    temporal_cursor.execute(query)
-    values = temporal_cursor.fetchall()
-    temporal_cursor.close()
-    connection_to_check_values.close()
-    return values
