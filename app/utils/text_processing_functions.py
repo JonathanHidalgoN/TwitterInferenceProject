@@ -49,7 +49,6 @@ def get_tweets_text(db,username, n = 1_000):
     tweets = db.get_values(query)
     tweets = [tweet[0] for tweet in tweets]
     return " ".join(tweets)
-    return tweets
 
 def delete_words(text, black_list):
     """
@@ -70,7 +69,7 @@ def count_occurrences(db,username, n = 1_000, black_list = [], top_n = 10):
         username (str): The username of the user.
         n (int): The number of tweets to get the text of.
         black_list (list): The list of words to delete.
-        Returns:
+    Returns:
         Counter: The number of occurrences of each word.
     """
     text = get_tweets_text(db,username, n)
@@ -78,3 +77,22 @@ def count_occurrences(db,username, n = 1_000, black_list = [], top_n = 10):
     cleaned_text = delete_words(cleaned_text, black_list)
     words_times = Counter(cleaned_text.split())
     return words_times.most_common(top_n)
+
+def get_occurences(db,username,character ,n = 1000):
+    """
+    Get the hashtags of a user.
+    Args:
+        db (Database): The database object.
+        username (str): The username of the user.
+        n (int): The number of tweets to get the text of.
+    Returns:
+        list: The hashtags of the user.
+    """
+    #Working on this to work do not commit now 
+    tweet = get_tweets_text(db,username, n)
+    compilation = []
+    match = re.findall(r'\b{character}\w+'.format(character = character), tweet)
+    #match = re.findall(r'\b[s]\w+', tweet)
+    if match != []:
+        compilation.append(match)
+    return compilation
