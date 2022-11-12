@@ -52,16 +52,20 @@ def get_tweets_text(db,username, n = 1_000):
 
 def delete_words(text, black_list):
     """
-    Delete useless words.
+    Delete words from a text.
     Args:
-        text (str): text to clean
+        text (str): The text to delete words from.
+        black_list (list): The list of words to delete.
     Returns:
-        text (str): cleaned text
+        str: The text without the words in the black list.
     """
-    re_banned_words = re.compile(r"\b(" + "|".join(black_list) + ")\\W", re.I)
-    return re_banned_words.sub("", text)
+    if black_list == []:
+        return text
+    pattern = re.compile(r'\b(' + r'|'.join(black_list) + r')\b\s*')
+    text = pattern.sub('', text)
+    return text
 
-def count_occurrences(db,username, n = 1_000, black_list = [], top_n = 10):
+def count_occurrences(text,black_list = [], top_n = 10):
     """
     Count the number of occurrences of each word in a column.
     Args:
@@ -72,7 +76,6 @@ def count_occurrences(db,username, n = 1_000, black_list = [], top_n = 10):
     Returns:
         Counter: The number of occurrences of each word.
     """
-    text = get_tweets_text(db,username, n)
     cleaned_text = clean_text(text)
     cleaned_text = delete_words(cleaned_text, black_list)
     words_times = Counter(cleaned_text.split())

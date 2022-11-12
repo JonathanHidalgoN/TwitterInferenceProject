@@ -149,7 +149,8 @@ def create_common_words_graph(db,username,n = 1000,black_list = [],top_n = 10):
     Returns:
         Figure: The dashboard of the most common words in the tweets of the user.
     """
-    common_words = text_functions.count_occurrences(db,username,n,black_list,top_n)
+    text = text_functions.get_tweets_text(db,username,n)
+    common_words = text_functions.count_occurrences(text,black_list,top_n)
     words = [word[0] for word in common_words]
     counts = [word[1] for word in common_words]
     fig, ax = plt.subplots(figsize=(10, 5))
