@@ -7,6 +7,7 @@ from utils import text_processing_functions
 db = Database(database_options)
 db.connect()
 
+
 st.title("Tweets project")
 st.header("You can select users in the database or scrape new ones")
 #Select users from the database or scrape new ones
@@ -24,7 +25,7 @@ if option == "Existing users":
     with col1:
         user_image = app_functions.get_image_of_user(db,selected_user)
         st.image(user_image, width=180)
-    days_to_show = st.select_slider("Days of tweets to show", options=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000])
+    days_to_show = st.select_slider("Number of tweets to show", options=[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000])
     dashboard = app_functions.create_dates_dashboard(db,selected_user, days_to_show)
     st.pyplot(dashboard, width=500)
     col1, col2 = st.columns(2)
@@ -46,3 +47,5 @@ if option == "Existing users":
         st.pyplot(dist1, width=500, height=500)
         dist2 = app_functions.display_distribution_2 = app_functions.display_distribution(db, text_option_2, tweets_for_distributions)
         st.pyplot(dist2, width=500, height=500)
+
+
