@@ -63,4 +63,8 @@ def test_count_words():
     text = text_functions.count_occurrences(text)
     assert len(text) == 0
     assert text == []
-    
+    text = "banana banana banana Banana BAnana BAnaNa, BANANA"
+    text = text_functions.count_occurrences(text)
+    assert len(text) == 1
+    assert text == [("banana", 7)]
+
