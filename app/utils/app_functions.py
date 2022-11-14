@@ -7,7 +7,9 @@ import datetime as dt
 import matplotlib.pyplot as plt
 from utils import text_processing_functions as text_functions 
 from streamlit import write as stwrite
+from streamlit import markdown as stmarkdown
 import numpy as np
+from random import choice as randomchoice
 
 def users_with_most_tweets(db, n=10):
     """Get the users with the most tweets in the database.
@@ -117,26 +119,22 @@ def create_dates_dashboard(db,username,n = 1_000, group_by = "day"):
         Figure: The dashboard of the dates of the tweets of the user.
     """
     dates = get_tweets_dates(db,username,n)
-    dates = [date[0] for date in dates]
-    df = pd.DataFrame(dates, columns=['date'])
-    df['year'] = df['date'].dt.year
-    df['month'] = df['date'].dt.month
-    df['weekday'] = df['date'].dt.weekday
-    df['day'] = df['date'].dt.day
+    dates = [date[0].date() for date in dates]
+    dates = pd.DataFrame(dates, columns=['date'])
+    dates['date'] = pd.to_datetime(dates['date'])
+    #count per day
     if group_by == "day":
-        df = df.groupby(['year','month','day']).size().reset_index(name='counts')
+        dates = dates.groupby(dates['date'].dt.date).size().reset_index(name='counts')
+    #count per month
     elif group_by == "month":
-        df = df.groupby(['year','month']).size().reset_index(name='counts')
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.set_theme(style="ticks")
-    sns.set_style("darkgrid")
-    sns.lineplot(x=df[group_by], y=df['counts'], data=df, ax=ax,
-                palette="pastel", linewidth=2.5, markers=True,err_style=None, color = "red")
+        dates = dates.groupby(dates['date'].dt.to_period("M")).size().reset_index(name='counts')
+    #graph
+    fig, ax = plt.subplots(figsize=(15, 5))
+    sns.lineplot(x="date", y="counts", data=dates, ax=ax)
     ax.set_title(f"Number of tweets per {group_by} of {username}")
-    ax.set_xlabel(f"{group_by}")
+    ax.set_xlabel(f"Date ({group_by})")
     ax.set_ylabel("Number of tweets")
     return fig
-
 
 def create_common_words_graph(db,username,n = 1000,black_list = [],top_n = 10):
     """Create a bar plot of the most common words in the tweets of a user.
@@ -187,13 +185,14 @@ def display_distribution(db,col, n = 1000):
     Returns:
         Figure: The dashboard of the distribution of the column.
     """
+    colors = ["red", "blue", "green", "yellow", "orange", "purple", "pink", "brown", "grey", "black"]
     if col !="number of words per tweet":
         favs = get_a_column(db,"Tweets",f"{col}",f"limit {n}")
         favs = [fav[0] for fav in favs]
         fig, ax = plt.subplots(figsize=(10, 5))
         sns.set_style("darkgrid")
-        ax.set_xlim(0, np.percentile(favs, 95))
-        sns.histplot(favs, ax=ax, color = "red", palette="pastel", kde=True)
+        ax.set_xlim(0, np.percentile(favs, 90))
+        sns.histplot(favs, ax=ax, color = randomchoice(colors) , palette="pastel", kde=True)
         ax.set_title(f"Distribution of {col}")
         ax.set_ylabel("Number of tweets")
         ax.set_xlabel(f"Number of {col}")
@@ -202,8 +201,8 @@ def display_distribution(db,col, n = 1000):
         words = [len(word[0].split()) for word in words]
         fig, ax = plt.subplots(figsize=(10, 5))
         sns.set_style("darkgrid")
-        ax.set_xlim(0, np.percentile(words, 95))
-        sns.histplot(words, ax=ax, color = "skyblue", palette="pastel", kde=True)
+        ax.set_xlim(0, np.percentile(words, 90))
+        sns.histplot(words, ax=ax, color = randomchoice(colors), palette="pastel", kde=True)
         ax.set_title(f"Distribution of {col}")
         ax.set_ylabel("Number of tweets")
         ax.set_xlabel(f"Number of {col}")
@@ -217,11 +216,6 @@ def _add_space(n = 5):
     """
     for _ in range(n):
         stwrite("")
-
-
-
-
-
 
 
 if __name__ == "__main__":
