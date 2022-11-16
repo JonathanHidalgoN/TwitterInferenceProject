@@ -6,6 +6,13 @@ from tensorflow.keras.layers import TextVectorization
 from pickle import load as load_pickle
 
 def load_vectorizer(path):
+    """
+    Load a TextVectorization layer from a pickle file.
+    Args:
+        path: Path to the pickle file.
+    Returns:
+        A TextVectorization layer.
+    """
     vectorizer = TextVectorization(max_tokens=20000, output_sequence_length=100)
     vectorizer.adapt(np.array([""]))
     weights = load_pickle(open(path, "rb"))["weights"]
@@ -14,6 +21,13 @@ def load_vectorizer(path):
     return vectorizer
 
 def load_text_idx(path):
+    """
+    Load a text index from a pickle file.
+    Args:
+        path: Path to the pickle file.
+    Returns:
+        A dict mapping tokens to indices.
+    """
     with open(path, "rb") as f:
         text_idx = load_pickle(f)
     return text_idx
@@ -181,11 +195,28 @@ class TransformerDecoder(layers.Layer):
 
 
 def load_model(path):
+    """
+    Load model from path
+    Args:
+        path: where the model is saved
+    Returns:
+        keras model
+    """
     custom = {"PositionalEmbedding":PositionalEmbedding, "TransformerDecoder":TransformerDecoder}
     model = keras.models.load_model(path, custom_objects=custom)
     return model
 
-def generate_text(model, prompt, generate_length, model_input_length, temperature = 1.0):
+def generate_text(model, prompt, generate_length, temperature = 1.0):
+    """
+    Generate text using the model
+    Args:
+        model: keras model
+        prompt: string
+        generate_length: int
+        temperature: float, between 0 and 1
+    Returns:
+        Generated string
+    """
     text_vectorization_path = "text_generation/text_vectorization.pkl"
     tokens_index_path = "text_generation/tokens_index"
     text_vectorization = load_vectorizer(text_vectorization_path)
