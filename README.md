@@ -1,6 +1,4 @@
-Twitter inference project is my first project where I coded a scraper to store tweets and users in MySQL database, then I made a web app with streamlit to interact with the database and finally train a neural network to
-write tweets like certain users.
-
+witter inference project is my first project where I coded a scraper to store tweets and users in MySQL database, then I made a web app with streamlit to interact with the database and finally train a neural network to write tweets like certain users.
 # Database structure.
 ![Untitled (2)](https://user-images.githubusercontent.com/56855593/194765273-90fd0df1-5ef9-487a-b74f-185b73e291c5.png)
 
