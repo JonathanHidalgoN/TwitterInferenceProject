@@ -1,0 +1,24 @@
+services:
+  db:
+    image : mysql:8.0.27
+    restart : always
+    environment :
+      MYSQL_ROOT_PASSWORD : root
+      MYSQL_DATABASE : tweetdb
+      MYSQL_USER : tweetuser
+      MYSQL_PASSWORD : tweetpass
+    healthcheck :
+      test : ["CMD" , "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval : 10s
+      retries : 3
+      start_period : 30s
+    volumes :
+      - ./mysql:/var/lib/mysql
+    ports :
+      - "3307:3306"
+  
+  python_pipeline:
+    build : src
+    depends_on:
+      - db
+        
