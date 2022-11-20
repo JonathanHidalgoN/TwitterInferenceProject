@@ -3,6 +3,7 @@ from tweets_pipeline.database import Database
 from app_options import database_options, stop_words
 from utils import app_functions 
 from utils import text_processing_functions
+from text_generation.text_generator import generate_text, load_model
 #Create a database object and connect to the database
 db = Database(database_options)
 db.connect()
@@ -47,5 +48,15 @@ if option == "Existing users":
         st.pyplot(dist1, width=500, height=500)
         dist2 = app_functions.display_distribution_2 = app_functions.display_distribution(db, text_option_2, tweets_for_distributions)
         st.pyplot(dist2, width=500, height=500)
-
-
+#input text
+    prompt = st.text_input("Insert text to generate a tweet", "Insert text here")
+    col1, col2 = st.columns(2)
+    with col1:
+        generate_tweet_button = st.button("Generate tweet")
+    with col2:
+        words_to_generate = st.slider("Select the number of words to generate", 10, 100, 10)
+    model = load_model("app/text_generation/model2022-11-13 22_35_35.364060.h5")
+    #box to show the generated text
+    if generate_tweet_button:
+        text = generate_text(model,prompt ,words_to_generate,0.7)
+        st.text_area("Generated text", text)

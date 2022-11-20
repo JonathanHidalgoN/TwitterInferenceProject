@@ -98,8 +98,8 @@ class TextGenerator(keras.callbacks.Callback):
         self.print_freq = print_freq
         self.text_vectorization = None
         self.tokens_index = None
-        self.text_vectorization_path = "text_generation/text_vectorization.pkl"
-        self.tokens_index_path = "text_generation/tokens_index"
+        self.text_vectorization_path = "app/text_generation/text_vectorization.pkl"
+        self.tokens_index_path = "app/text_generation/tokens_index"
         self.load_text_vectorization()
         self.load_tokens_index()
 
@@ -217,8 +217,8 @@ def generate_text(model, prompt, generate_length, temperature = 1.0):
     Returns:
         Generated string
     """
-    text_vectorization_path = "text_generation/text_vectorization.pkl"
-    tokens_index_path = "text_generation/tokens_index"
+    text_vectorization_path = "app/text_generation/text_vectorization.pkl"
+    tokens_index_path = "app/text_generation/tokens_index"
     text_vectorization = load_vectorizer(text_vectorization_path)
     tokens_index = load_text_idx(tokens_index_path)
     sentence = prompt
@@ -231,5 +231,5 @@ def generate_text(model, prompt, generate_length, temperature = 1.0):
     return sentence
 
 if __name__ == "__main__":
-    model = load_model("text_generation/model2022-11-13 22_35_35.364060.h5")
-    print(generate_text(model, "I love", 100, 20, 0.5)) 
+    model = load_model("app/text_generation/model2022-11-13 22_35_35.364060.h5")
+    print(generate_text(model, "I love", 100, 0.7)) 
