@@ -88,9 +88,8 @@ class TweetScraper:
         """
         unique_users = []
         for tweet in tweets:
-            user_in_database = self._check_user_in_database(tweet.user.username)
-            if (tweet.user not in unique_users) and (user_in_database):
-                unique_users.append(tweet.user.username)
+            unique_users.append(tweet.user.username)
+        unique_users = list(set(unique_users))
         return unique_users
 
     def scrape_user(self, username):
@@ -175,30 +174,34 @@ class TweetScraper:
         userinfo_table_name = "Usersinfo"
         users_table_name = "Users"
         for user in unique_users:
-            user_info = self.scrape_user(user)
-            if user_info is not None:
-                usersinfo_values = [
-                    user_info.description,
-                    user_info.displayname,
-                    user_info.location,
-                    user_info.profileImageUrl,
-                ]
+            is_user_in_database = self._check_user_in_database(user)
+            if is_user_in_database is False:
+                next
             else:
-                usersinfo_values = ["None", "None", "None", "None"]
-            self.insert_into_database(userinfo_table_name, usersinfo_values)
-            if user_info is not None:
-                users_values = [
-                    user,
-                    user_info.followersCount,
-                    user_info.friendsCount,
-                    user_info.created.strftime("%Y-%m-%d"),
-                    user_info.verified,
-                    user_info.favouritesCount,
-                    self.find_last_id(userinfo_table_name),
-                ]
-            else:
-                users_values = [user, 0, 0, "None", 0, 0, "None", self.find_last_id(userinfo_table_name)]
-            self.insert_into_database(users_table_name, users_values)
+                user_info = self.scrape_user(user)
+                if user_info is not None:
+                    usersinfo_values = [
+                        user_info.description,
+                        user_info.displayname,
+                        user_info.location,
+                        user_info.profileImageUrl,
+                    ]
+                else:
+                    usersinfo_values = ["None", "None", "None", "None"]
+                self.insert_into_database(userinfo_table_name, usersinfo_values)
+                if user_info is not None:
+                    users_values = [
+                        user,
+                        user_info.followersCount,
+                        user_info.friendsCount,
+                        user_info.created.strftime("%Y-%m-%d"),
+                        user_info.verified,
+                        user_info.favouritesCount,
+                        self.find_last_id(userinfo_table_name),
+                    ]
+                else:
+                    users_values = [user, 0, 0, "9999-12-31", 0, 0, self.find_last_id(userinfo_table_name)]
+                self.insert_into_database(users_table_name, users_values)
 
     def count_tweets(self, query_id):
         """
@@ -320,11 +323,8 @@ class TweetScraper:
 
 
 if __name__ == "__main__":
-    users = ["@elonmusk", "@BarackObama", "@Oprah", "@richardbranson",
-    "@justinbieber", "@thejustinwelsh", "@fchollet", "@IAmClintMurphy",
-    "@yanisvaroufakis", "@Asmongold"]  
     from tweets_pipeline.options import database_options, scraper_options
-    for user in users:
-        scraper_options["query"] = f"(FROM:{user}) lang:en"
-        scraper = TweetScraper()
-        scraper.start_scraping(scraper_options, database_options)
+    scraper = TweetScraper()
+    scraper.start_scraping(scraper_options, database_options)
+    
+    

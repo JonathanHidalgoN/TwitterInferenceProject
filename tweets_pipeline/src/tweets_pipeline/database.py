@@ -28,6 +28,7 @@ class Database:
         """
         try:
             self.connection = mysql.connector.connect(**self.database_options)
+            self.connection.start_transaction(isolation_level='READ UNCOMMITTED')
             self.connection_status = True
             return self.connection
         except Exception as e:
@@ -74,3 +75,5 @@ class Database:
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             return cursor.fetchall()
+
+        
